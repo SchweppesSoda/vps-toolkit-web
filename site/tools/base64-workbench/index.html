@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base64 Workbench</title>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #f3eee6 0%, #e2edf2 48%, #d5e4d0 100%);
+      --panel: rgba(255, 252, 247, 0.88);
+      --panel-strong: rgba(255, 250, 242, 0.96);
+      --ink: #1f2a30;
+      --muted: #5f6f77;
+      --accent: #006d77;
+      --accent-strong: #004f57;
+      --border: rgba(28, 53, 61, 0.12);
+      --shadow: 0 18px 52px rgba(20, 36, 41, 0.14);
+      --danger: #b5422b;
+      --ok: #20624c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI Variable", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 38vw;
+      height: 38vw;
+      border-radius: 999px;
+      filter: blur(22px);
+      opacity: 0.38;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -12vw;
+      right: -8vw;
+      background: radial-gradient(circle, rgba(0, 109, 119, 0.34), transparent 68%);
+    }
+
+    body::after {
+      bottom: -14vw;
+      left: -10vw;
+      background: radial-gradient(circle, rgba(221, 124, 55, 0.26), transparent 70%);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1240px, calc(100% - 32px));
+      margin: 24px auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      padding: 24px 24px 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0) 62%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(0, 109, 119, 0.09);
+      color: var(--accent-strong);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(28px, 4vw, 50px);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .hero-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .mini-card {
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+    }
+
+    .mini-card strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mini-card span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    select,
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(24, 42, 49, 0.14);
+      border-radius: 16px;
+      background: var(--panel-strong);
+      color: var(--ink);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: rgba(0, 109, 119, 0.52);
+      box-shadow: 0 0 0 4px rgba(0, 109, 119, 0.12);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 254px;
+      resize: vertical;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 12px 22px rgba(0, 109, 119, 0.22);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--ink);
+      border: 1px solid rgba(24, 42, 49, 0.1);
+    }
+
+    .warn {
+      background: rgba(181, 66, 43, 0.1);
+      color: var(--danger);
+    }
+
+    .stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px 14px;
+      margin-top: 2px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.62);
+      border-radius: 16px;
+      border: 1px solid rgba(20, 36, 41, 0.06);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .check input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .status {
+      min-height: 72px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.64);
+      border: 1px solid rgba(24, 42, 49, 0.07);
+      line-height: 1.65;
+      color: var(--muted);
+      white-space: pre-wrap;
+      font-size: 13px;
+    }
+
+    .status.ok {
+      border-color: rgba(32, 98, 76, 0.18);
+      color: var(--ok);
+      background: rgba(32, 98, 76, 0.08);
+    }
+
+    .status.error {
+      border-color: rgba(181, 66, 43, 0.18);
+      color: var(--danger);
+      background: rgba(181, 66, 43, 0.08);
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 18px, 1240px);
+        margin: 10px auto 18px;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 20px;
+      }
+
+      .hero {
+        padding: 18px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      textarea {
+        min-height: 210px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Base64 Workbench</div>
+      <h1>本地离线 Base64 编解码台</h1>
+      <p class="lead">
+        这是一个单文件、本地可直接打开的 HTML 工具。除了标准 Base64 以外，还兼容 base64url、缺失补位、夹杂空白、脏字符过滤、自定义字母表，以及常见的 bcrypt / crypt 非标字母表。
+      </p>
+      <div class="hero-grid">
+        <div class="mini-card">
+          <strong>宽松解码</strong>
+          <span>可自动补齐 padding，并忽略换行、空格、数据头或杂字符。</span>
+        </div>
+        <div class="mini-card">
+          <strong>非标兼容</strong>
+          <span>支持 Standard、URL-safe、bcrypt、crypt、自定义 64 字符字母表。</span>
+        </div>
+        <div class="mini-card">
+          <strong>多种输出</strong>
+          <span>解码结果可看作 UTF-8 文本或 Hex，还能一键下载为二进制文件。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">输入区</h2>
+          <span class="subtle">把普通文本、Hex、Base64 或奇怪变体贴进来</span>
+        </div>
+
+        <div class="grid">
+          <div class="grid grid-2">
+            <label>
+              输入解释方式
+              <select id="inputMode">
+                <option value="text">普通文本 UTF-8</option>
+                <option value="hex">十六进制 Hex</option>
+                <option value="base64">Base64 / 非标 Base64</option>
+              </select>
+            </label>
+
+            <label>
+              解码后显示方式
+              <select id="outputMode">
+                <option value="text">UTF-8 文本</option>
+                <option value="hex">十六进制 Hex</option>
+                <option value="base64">标准 Base64</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            输入内容
+            <textarea id="inputText" spellcheck="false" placeholder="例如：
+- hello world
+- aGVsbG8gd29ybGQ
+- SGVsbG8td29ybGQ_
+- ./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+- data:text/plain;base64,SGVsbG8="></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="primary" id="encodeBtn" type="button">编码为 Base64</button>
+            <button class="primary" id="decodeBtn" type="button">从 Base64 解码</button>
+            <button class="secondary" id="swapBtn" type="button">输入输出互换</button>
+            <button class="secondary" id="sampleBtn" type="button">填充示例</button>
+            <button class="warn" id="clearBtn" type="button">清空</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">兼容设置</h2>
+          <span class="subtle">对各种非标 Base64 的容错和字母表映射</span>
+        </div>
+
+        <div class="stack">
+          <div class="grid grid-2">
+            <label>
+              编码字母表
+              <select id="encodePreset">
+                <option value="standard">Standard</option>
+                <option value="urlsafe">URL-safe (-_)</option>
+                <option value="bcrypt">bcrypt</option>
+                <option value="crypt">crypt / Unix</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+
+            <label>
+              解码字母表
+              <select id="decodePreset">
+                <option value="auto">Smart detect</option>
+                <option value="standard">Standard</option>
+                <option value="urlsafe">URL-safe (-_)</option>
+                <option value="bcrypt">bcrypt</option>
+                <option value="crypt">crypt / Unix</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid grid-2">
+            <label>
+              自定义编码字母表
+              <input id="encodeAlphabet" type="text" spellcheck="false" placeholder="64 个不重复字符，仅在 Custom 时启用">
+            </label>
+
+            <label>
+              自定义解码字母表
+              <input id="decodeAlphabet" type="text" spellcheck="false" placeholder="64 个不重复字符，仅在 Custom 时启用">
+            </label>
+          </div>
+
+          <div class="checks">
+            <label class="check"><input id="stripPadding" type="checkbox">编码时去掉尾部 =</label>
+            <label class="check"><input id="mimeWrap" type="checkbox">编码时每 76 字符换行</label>
+            <label class="check"><input id="stripDataUrl" type="checkbox" checked>解码时剥离 data:...;base64, 头</label>
+            <label class="check"><input id="ignoreWhitespace" type="checkbox" checked>忽略空格、换行、Tab</label>
+            <label class="check"><input id="ignoreGarbage" type="checkbox" checked>忽略字母表外字符</label>
+            <label class="check"><input id="fixPadding" type="checkbox" checked>自动补齐 padding</label>
+          </div>
+
+          <div class="actions">
+            <button class="secondary" id="downloadBtn" type="button">下载解码结果</button>
+            <button class="secondary" id="copyBtn" type="button">复制输出</button>
+          </div>
+
+          <div id="status" class="status">等待操作。</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">输出区</h2>
+        <span class="subtle">解码后的原始字节会保留在内存里，方便再次转换或下载</span>
+      </div>
+      <div class="grid">
+        <label>
+          输出内容
+          <textarea id="outputText" spellcheck="false" placeholder="结果会显示在这里"></textarea>
+        </label>
+        <div class="footer-note">
+          提示：如果解码结果不是合法 UTF-8，切换“解码后显示方式”为 Hex 更稳妥。若你碰到更偏门的变体，直接把 64 字符字母表填到 Custom 即可。
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STD_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const PRESETS = {
+      standard: STD_ALPHABET,
+      urlsafe: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
+      bcrypt: "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+      crypt: "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    };
+    const PRESET_LABELS = {
+      auto: "Smart detect",
+      standard: "Standard",
+      urlsafe: "URL-safe",
+      bcrypt: "bcrypt",
+      crypt: "crypt / Unix",
+      custom: "Custom"
+    };
+
+    const state = {
+      outputBytes: new Uint8Array(),
+      outputFileName: "decoded.bin"
+    };
+
+    const els = {
+      inputMode: document.getElementById("inputMode"),
+      outputMode: document.getElementById("outputMode"),
+      inputText: document.getElementById("inputText"),
+      outputText: document.getElementById("outputText"),
+      encodePreset: document.getElementById("encodePreset"),
+      decodePreset: document.getElementById("decodePreset"),
+      encodeAlphabet: document.getElementById("encodeAlphabet"),
+      decodeAlphabet: document.getElementById("decodeAlphabet"),
+      stripPadding: document.getElementById("stripPadding"),
+      mimeWrap: document.getElementById("mimeWrap"),
+      stripDataUrl: document.getElementById("stripDataUrl"),
+      ignoreWhitespace: document.getElementById("ignoreWhitespace"),
+      ignoreGarbage: document.getElementById("ignoreGarbage"),
+      fixPadding: document.getElementById("fixPadding"),
+      status: document.getElementById("status"),
+      encodeBtn: document.getElementById("encodeBtn"),
+      decodeBtn: document.getElementById("decodeBtn"),
+      swapBtn: document.getElementById("swapBtn"),
+      sampleBtn: document.getElementById("sampleBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      copyBtn: document.getElementById("copyBtn"),
+      downloadBtn: document.getElementById("downloadBtn")
+    };
+
+    function setStatus(message, kind = "") {
+      els.status.textContent = message;
+      els.status.className = `status ${kind}`.trim();
+    }
+
+    function chunkString(value, size) {
+      if (!size || size < 1) {
+        return value;
+      }
+
+      const chunks = [];
+      for (let index = 0; index < value.length; index += size) {
+        chunks.push(value.slice(index, index + size));
+      }
+      return chunks.join("\n");
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    function hexToBytes(hexText) {
+      const cleaned = hexText.replace(/0x/gi, "").replace(/[^0-9a-f]/gi, "");
+      if (!cleaned.length) {
+        return new Uint8Array();
+      }
+      if (cleaned.length % 2 !== 0) {
+        throw new Error("Hex length must be even.");
+      }
+
+      const bytes = new Uint8Array(cleaned.length / 2);
+      for (let i = 0; i < cleaned.length; i += 2) {
+        bytes[i / 2] = parseInt(cleaned.slice(i, i + 2), 16);
+      }
+      return bytes;
+    }
+
+    function ensureAlphabet(input, label) {
+      if (input.length !== 64) {
+        throw new Error(`${label} must contain exactly 64 characters.`);
+      }
+      if (new Set(input).size !== 64) {
+        throw new Error(`${label} must not contain duplicate characters.`);
+      }
+      if (input.includes("=")) {
+        throw new Error(`${label} must not contain '='.`);
+      }
+      return input;
+    }
+
+    function getAlphabet(kind, customValue, label) {
+      if (kind === "custom") {
+        return ensureAlphabet(customValue, label);
+      }
+      const alphabet = PRESETS[kind];
+      if (!alphabet) {
+        throw new Error(`Unknown alphabet preset: ${kind}`);
+      }
+      return alphabet;
+    }
+
+    function bytesToBase64(bytes, alphabet, stripPadding, lineWrap) {
+      let output = "";
+
+      for (let index = 0; index < bytes.length; index += 3) {
+        const a = bytes[index];
+        const b = index + 1 < bytes.length ? bytes[index + 1] : 0;
+        const c = index + 2 < bytes.length ? bytes[index + 2] : 0;
+        const value = (a << 16) | (b << 8) | c;
+
+        output += alphabet[(value >> 18) & 63];
+        output += alphabet[(value >> 12) & 63];
+        output += index + 1 < bytes.length ? alphabet[(value >> 6) & 63] : "=";
+        output += index + 2 < bytes.length ? alphabet[value & 63] : "=";
+      }
+
+      if (stripPadding) {
+        output = output.replace(/=+$/g, "");
+      }
+
+      return chunkString(output, lineWrap);
+    }
+
+    function formatPresetLabel(preset) {
+      return PRESET_LABELS[preset] || preset;
+    }
+
+    function uniqueNotes(values) {
+      return [...new Set(values.filter(Boolean))];
+    }
+
+    function preprocessDecodeInput(raw, options) {
+      let value = raw;
+      const notes = [];
+
+      if (options.stripDataUrl) {
+        const match = value.match(/^\s*data:[^,]*;base64,/i);
+        if (match) {
+          value = value.slice(match[0].length);
+          notes.push("removed data URL prefix");
+        }
+      }
+
+      if (options.ignoreWhitespace) {
+        const before = value.length;
+        value = value.replace(/\s+/g, "");
+        if (value.length !== before) {
+          notes.push("ignored whitespace");
+        }
+      }
+
+      return { value, notes };
+    }
+
+    function buildDecodeNormalizer(alphabet) {
+      const map = new Map();
+      for (let i = 0; i < alphabet.length; i += 1) {
+        map.set(alphabet[i], STD_ALPHABET[i]);
+      }
+      return map;
+    }
+
+    function normalizeWithPreset(value, preset, options) {
+      const notes = [];
+      const alphabet = getAlphabet(preset, options.customAlphabet, "Decode alphabet");
+      const normalizer = buildDecodeNormalizer(alphabet);
+
+      let normalized = "";
+      let garbageCount = 0;
+      for (const char of value) {
+        if (char === "=") {
+          normalized += "=";
+          continue;
+        }
+
+        if (normalizer.has(char)) {
+          normalized += normalizer.get(char);
+          continue;
+        }
+
+        if (options.ignoreGarbage) {
+          garbageCount += 1;
+          continue;
+        }
+
+        throw new Error(`Unsupported character for selected alphabet: ${char}`);
+      }
+
+      if (garbageCount) {
+        notes.push(`ignored ${garbageCount} non-alphabet characters`);
+      }
+
+      if (options.fixPadding && normalized.length % 4 !== 0) {
+        const missing = (4 - (normalized.length % 4)) % 4;
+        normalized += "=".repeat(missing);
+        if (missing) {
+          notes.push(`added ${missing} padding character(s)`);
+        }
+      }
+
+      if (normalized.length % 4 !== 0) {
+        throw new Error("Base64 length is invalid. Enable padding repair or check the input.");
+      }
+
+      return { normalized, notes, preset };
+    }
+
+    function scoreDecodedBytes(bytes) {
+      let score = 0;
+      let utf8Valid = false;
+
+      try {
+        const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        utf8Valid = true;
+        score += 50;
+
+        if (text.length) {
+          const printableCount = Array.from(text).filter(char => {
+            const code = char.charCodeAt(0);
+            return code === 9 || code === 10 || code === 13 || (code >= 32 && code <= 126) || code > 159;
+          }).length;
+          score += Math.round((printableCount / text.length) * 25);
+        }
+      } catch {
+        score += 5;
+      }
+
+      score += Math.min(bytes.length, 24) / 2;
+      return { score, utf8Valid };
+    }
+
+    function inspectDecodeCandidate(value, preset, options, inheritedNotes) {
+      try {
+        const normalized = normalizeWithPreset(value, preset, options);
+        const bytes = base64ToBytes(normalized.normalized);
+        const metrics = scoreDecodedBytes(bytes);
+        return {
+          ok: true,
+          preset,
+          bytes,
+          normalized: normalized.normalized,
+          notes: uniqueNotes([...inheritedNotes, ...normalized.notes]),
+          score: metrics.score,
+          utf8Valid: metrics.utf8Valid
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          preset,
+          error
+        };
+      }
+    }
+
+    function sortCandidates(candidates) {
+      return [...candidates].sort((left, right) => right.score - left.score);
+    }
+
+    function chooseAutoCandidate(rawValue, validCandidates) {
+      const sorted = sortCandidates(validCandidates);
+      const candidateMap = new Map(validCandidates.map(candidate => [candidate.preset, candidate]));
+      const hasPlus = rawValue.includes("+");
+      const hasDash = rawValue.includes("-") || rawValue.includes("_");
+      const hasDot = rawValue.includes(".");
+
+      if (hasDash && !hasPlus && !hasDot && candidateMap.has("urlsafe")) {
+        return {
+          chosenPreset: "urlsafe",
+          label: "URL-safe",
+          standard: false,
+          confidence: "high",
+          detail: "Detected '-' or '_' markers."
+        };
+      }
+
+      if (hasPlus && !hasDash && !hasDot && candidateMap.has("standard")) {
+        return {
+          chosenPreset: "standard",
+          label: "Standard",
+          standard: true,
+          confidence: "high",
+          detail: "Detected '+' marker."
+        };
+      }
+
+      if (hasDot && !hasDash && !hasPlus) {
+        const family = sortCandidates(validCandidates.filter(candidate =>
+          candidate.preset === "bcrypt" || candidate.preset === "crypt"
+        ));
+
+        if (family.length >= 2) {
+          const gap = family[0].score - family[1].score;
+          if (gap >= 15) {
+            return {
+              chosenPreset: family[0].preset,
+              label: formatPresetLabel(family[0].preset),
+              standard: false,
+              confidence: "medium",
+              detail: "Dot markers suggest bcrypt/crypt family; picked the better decode candidate."
+            };
+          }
+
+          return {
+            chosenPreset: family[0].preset,
+            label: "bcrypt / crypt family",
+            standard: false,
+            confidence: "low",
+            detail: "Dot markers found, but bcrypt and crypt both remain plausible."
+          };
+        }
+
+        if (family.length === 1) {
+          return {
+            chosenPreset: family[0].preset,
+            label: formatPresetLabel(family[0].preset),
+            standard: false,
+            confidence: "medium",
+            detail: "Dot markers suggest a non-standard bcrypt/crypt-style alphabet."
+          };
+        }
+      }
+
+      if (hasPlus && hasDash) {
+        return {
+          chosenPreset: sorted[0].preset,
+          label: `${formatPresetLabel(sorted[0].preset)} (mixed markers)`,
+          standard: sorted[0].preset === "standard",
+          confidence: "low",
+          detail: "Input mixes standard and URL-safe markers."
+        };
+      }
+
+      if (candidateMap.has("standard")) {
+        if (validCandidates.length > 1) {
+          const plausible = validCandidates.map(candidate => formatPresetLabel(candidate.preset)).join(", ");
+          return {
+            chosenPreset: "standard",
+            label: "Standard-compatible (ambiguous)",
+            standard: true,
+            confidence: "low",
+            detail: `No strong non-standard markers were found. Plausible alphabets: ${plausible}.`
+          };
+        }
+
+        return {
+          chosenPreset: "standard",
+          label: "Standard-compatible",
+          standard: true,
+          confidence: "medium",
+          detail: "No strong non-standard markers were found."
+        };
+      }
+
+      return {
+        chosenPreset: sorted[0].preset,
+        label: formatPresetLabel(sorted[0].preset),
+        standard: sorted[0].preset === "standard",
+        confidence: "low",
+        detail: "Matched a known alphabet, but the input shape is ambiguous."
+      };
+    }
+
+    function resolveAutoDecode(value, options, inheritedNotes) {
+      const presets = ["standard", "urlsafe", "bcrypt", "crypt"];
+      const attempts = presets.map(preset => inspectDecodeCandidate(value, preset, options, inheritedNotes));
+      const valid = attempts.filter(candidate => candidate.ok);
+
+      if (!valid.length) {
+        throw new Error("Could not match standard, URL-safe, bcrypt, or crypt alphabets. The input may use a custom Base64 alphabet.");
+      }
+
+      const analysis = chooseAutoCandidate(value, valid);
+      const selected = valid.find(candidate => candidate.preset === analysis.chosenPreset) || sortCandidates(valid)[0];
+      return {
+        ...selected,
+        analysis
+      };
+    }
+
+    function normalizeForDecode(raw, options) {
+      const prepared = preprocessDecodeInput(raw, options);
+
+      if (options.preset === "auto") {
+        return resolveAutoDecode(prepared.value, options, prepared.notes);
+      }
+
+      const normalized = normalizeWithPreset(prepared.value, options.preset, options);
+      return {
+        normalized: normalized.normalized,
+        preset: normalized.preset,
+        notes: uniqueNotes([...prepared.notes, ...normalized.notes]),
+        analysis: {
+          chosenPreset: normalized.preset,
+          label: formatPresetLabel(normalized.preset),
+          standard: normalized.preset === "standard",
+          confidence: "manual",
+          detail: "Preset selected manually."
+        }
+      };
+    }
+
+    function base64ToBytes(base64) {
+      if (!base64) {
+        return new Uint8Array();
+      }
+
+      const clean = base64.replace(/=+$/g, "");
+      const outputLength = Math.floor((clean.length * 6) / 8);
+      const bytes = new Uint8Array(outputLength);
+      const lookup = Object.create(null);
+
+      for (let i = 0; i < STD_ALPHABET.length; i += 1) {
+        lookup[STD_ALPHABET[i]] = i;
+      }
+
+      let buffer = 0;
+      let bits = 0;
+      let offset = 0;
+
+      for (const char of clean) {
+        const value = lookup[char];
+        if (value === undefined) {
+          throw new Error(`Invalid normalized Base64 character: ${char}`);
+        }
+
+        buffer = (buffer << 6) | value;
+        bits += 6;
+
+        if (bits >= 8) {
+          bits -= 8;
+          bytes[offset] = (buffer >> bits) & 255;
+          offset += 1;
+        }
+      }
+
+      return bytes.slice(0, offset);
+    }
+
+    function decodeBytesToView(bytes, mode) {
+      if (mode === "hex") {
+        return bytesToHex(bytes);
+      }
+      if (mode === "base64") {
+        return bytesToBase64(bytes, STD_ALPHABET, false, 0);
+      }
+
+      const decoder = new TextDecoder("utf-8", { fatal: true });
+      return decoder.decode(bytes);
+    }
+
+    function readInputBytesForEncode() {
+      const mode = els.inputMode.value;
+      const raw = els.inputText.value;
+
+      if (mode === "hex") {
+        return hexToBytes(raw);
+      }
+
+      if (mode === "base64") {
+        const decoded = normalizeForDecode(raw, {
+          preset: els.decodePreset.value,
+          customAlphabet: els.decodeAlphabet.value.trim(),
+          stripDataUrl: els.stripDataUrl.checked,
+          ignoreWhitespace: els.ignoreWhitespace.checked,
+          ignoreGarbage: els.ignoreGarbage.checked,
+          fixPadding: els.fixPadding.checked
+        });
+        return base64ToBytes(decoded.normalized);
+      }
+
+      return new TextEncoder().encode(raw);
+    }
+
+    function renderOutput(bytes) {
+      state.outputBytes = bytes;
+      try {
+        els.outputText.value = decodeBytesToView(bytes, els.outputMode.value);
+      } catch (error) {
+        els.outputText.value = bytesToHex(bytes);
+        setStatus(`Decoded bytes are not valid UTF-8. Showing Hex instead.\n\n${error.message}`, "error");
+        return;
+      }
+    }
+
+    function handleEncode() {
+      try {
+        const bytes = readInputBytesForEncode();
+        const alphabet = getAlphabet(
+          els.encodePreset.value,
+          els.encodeAlphabet.value.trim(),
+          "Encode alphabet"
+        );
+        const lineWrap = els.mimeWrap.checked ? 76 : 0;
+        const base64 = bytesToBase64(bytes, alphabet, els.stripPadding.checked, lineWrap);
+        els.outputText.value = base64;
+        state.outputBytes = new TextEncoder().encode(base64);
+        state.outputFileName = "encoded.txt";
+
+        setStatus(
+          `Encode OK\nBytes: ${bytes.length}\nAlphabet: ${els.encodePreset.value}\nPadding: ${els.stripPadding.checked ? "stripped" : "kept"}`,
+          "ok"
+        );
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    }
+
+    function handleDecode() {
+      try {
+        const normalized = normalizeForDecode(els.inputText.value, {
+          preset: els.decodePreset.value,
+          customAlphabet: els.decodeAlphabet.value.trim(),
+          stripDataUrl: els.stripDataUrl.checked,
+          ignoreWhitespace: els.ignoreWhitespace.checked,
+          ignoreGarbage: els.ignoreGarbage.checked,
+          fixPadding: els.fixPadding.checked
+        });
+
+        const bytes = base64ToBytes(normalized.normalized);
+        renderOutput(bytes);
+        state.outputFileName = "decoded.bin";
+
+        const lines = [
+          "Decode OK",
+          `Bytes: ${bytes.length}`,
+          `Alphabet: ${normalized.preset}`,
+          `Normalized length: ${normalized.normalized.length}`,
+          `Detection: ${normalized.analysis.label}`,
+          `Confidence: ${normalized.analysis.confidence}`
+        ];
+
+        if (normalized.analysis.detail) {
+          lines.push(`Reason: ${normalized.analysis.detail}`);
+        }
+
+        if (normalized.notes.length) {
+          lines.push(`Adjustments: ${normalized.notes.join(", ")}`);
+        }
+
+        setStatus(lines.join("\n"), "ok");
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    }
+
+    function handleSwap() {
+      const input = els.inputText.value;
+      els.inputText.value = els.outputText.value;
+      els.outputText.value = input;
+      setStatus("Input and output swapped.");
+    }
+
+    function handleSample() {
+      els.inputMode.value = "base64";
+      els.outputMode.value = "text";
+      els.decodePreset.value = "auto";
+      els.inputText.value = "data:text/plain;base64,\nSGV sbG8td29y\nbGQ_";
+      setStatus("Sample inserted. Try decoding it.", "ok");
+    }
+
+    function handleClear() {
+      els.inputText.value = "";
+      els.outputText.value = "";
+      state.outputBytes = new Uint8Array();
+      setStatus("Cleared.");
+    }
+
+    async function handleCopy() {
+      try {
+        await navigator.clipboard.writeText(els.outputText.value);
+        setStatus("Output copied to clipboard.", "ok");
+      } catch (error) {
+        setStatus(`Copy failed: ${error.message}`, "error");
+      }
+    }
+
+    function handleDownload() {
+      if (!state.outputBytes.length) {
+        setStatus("Nothing to download yet.", "error");
+        return;
+      }
+
+      const blob = new Blob([state.outputBytes], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = state.outputFileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus(`Downloaded ${state.outputFileName}.`, "ok");
+    }
+
+    els.encodeBtn.addEventListener("click", handleEncode);
+    els.decodeBtn.addEventListener("click", handleDecode);
+    els.swapBtn.addEventListener("click", handleSwap);
+    els.sampleBtn.addEventListener("click", handleSample);
+    els.clearBtn.addEventListener("click", handleClear);
+    els.copyBtn.addEventListener("click", handleCopy);
+    els.downloadBtn.addEventListener("click", handleDownload);
+    els.outputMode.addEventListener("change", () => {
+      if (!state.outputBytes.length) {
+        return;
+      }
+      renderOutput(state.outputBytes);
+      setStatus("Output view updated.", "ok");
+    });
+
+    setStatus("Ready. Open this file locally in your browser.");
+  </script>
+</body>
+</html>

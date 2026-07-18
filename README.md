@@ -7,6 +7,7 @@ Canonical site:
 - <https://schweppessoda.github.io/vps-toolkit-web/>
 - <https://schweppessoda.github.io/vps-toolkit-web/tools/proxy-node-manager/proxy_node_manager.html>
 - <https://schweppessoda.github.io/vps-toolkit-web/tools/argosbx-argo-batch/argosbx_argo_batch.html>
+- <https://schweppessoda.github.io/vps-toolkit-web/tools/base64-workbench/>
 
 Operational scripts remain in [`SchweppesSoda/VPS-Toolkit`](https://github.com/SchweppesSoda/VPS-Toolkit). This repository only owns static browser-tool source and GitHub Pages deployment.
 
