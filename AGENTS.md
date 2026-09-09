@@ -1,6 +1,14 @@
-# AGENTS.md
+# VPS Toolkit browser tools
 
-This repository owns static browser tools for VPS Toolkit. Operational scripts remain in `SchweppesSoda/VPS-Toolkit`.
+本仓维护静态浏览器工具；运维脚本归 `VPS-Toolkit`。
+
+## 本地工作与完成标准
+
+- 在主目录 `main` 自主完成范围内的编辑、可逆本地生成、相关验证和提交，不在第一版后等待 review。同仓一个写入任务；仅用户要求隔离/并行时另建工作树，完成后按内容收回并清理。
+- 开始核对仓库、分支、工作树、已有改动和上游。保留无关改动；需要刷新上游便 fetch，离线注明未核实并继续独立本地工作。安全时 fast-forward，分叉不重置/强推；发布前再确认目标。
+- 搜索和测试从变更对象与直接消费者开始；共享契约、重命名/删除或失败证据才扩大。文档检查链接/diff，行为修改跑对应测试，通过后不无理由重复；正式发布门禁保留。
+- 完成包括请求落地、相关验证/文档和范围明确的本地提交；报告限制、本地/远程及发布状态。推送、Release、部署沿用会话授权；缺少授权时先准备可审阅的本地结果，仅暂停依赖该授权的动作。
+- 临时输出用 `.tmp/`；清理前核对未跟踪、忽略文件及恢复依赖，必要备份放仓库外。保留历史 tag/冻结归档，不整目录忽略共享 `.codex/` 配置。
 
 ## Structure
 
@@ -15,17 +23,8 @@ This repository owns static browser tools for VPS Toolkit. Operational scripts r
 - Do not add secrets, subscriptions, node links, exports, or server-specific files.
 - If a public URL changes, update `README.md` and add redirects in `SchweppesSoda/SchweppesSoda.github.io` when old links already existed.
 
-## Validation
+## 按变更验证
 
-- Open `site/index.html` locally and verify all tool links.
-- For changed tools, verify desktop and mobile layouts.
-- Run `git diff --check` before committing.
-
-## 日常维护与收尾
-
-- 日常在本仓主目录的 `main` 工作；同仓一次只允许一个任务写入，只读检查可以并行。
-- 开始前核对仓库、分支、工作树、未提交/未跟踪改动和远程状态。执行 `git fetch --tags --prune`，落后时在辨认遗留改动后使用 fast-forward；分叉先查明原因，不重置或强推。
-- 只有用户明确要求并行或隔离才建立临时分支/工作树。验证后将适用改动收回主目录，检查未跟踪及忽略文件，再清理临时工作树；必要备份放仓库外。
-- 已验证的改动在本仓源码主分支留下范围明确的本地提交。提交前再次核对远程和 staged 范围；推送、Release 和部署按用户已有授权执行，结束时说明本地/远程状态及剩余工作。
-- `.tmp/` 只放可重建的构建、测试和临时核验输出；现场备份与长期维护资料另行保管。历史 tag、冻结归档和兼容入口按既有合同保留。
-- 只忽略 `.codex/visualizations/`、`.codex/show-me-*.html` 等本地预览，不整目录忽略可能共享的 `.codex/` 配置。
+- 首页导航或公共 URL 改动：核对受影响链接与 `/vps-toolkit-web/` 子路径。
+- 工具 UI 改动：查看该工具相关技术文档，验证改变的交互及桌面/手机布局；共享样式变化再扩到消费者。
+- 纯文档/指令改动：链接与 `git diff --check`，无需打开所有工具或重跑全部 UI。
