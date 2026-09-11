@@ -1005,8 +1005,9 @@
       } catch (error) {
         els.outputText.value = bytesToHex(bytes);
         setStatus(`Decoded bytes are not valid UTF-8. Showing Hex instead.\n\n${error.message}`, "error");
-        return;
+        return false;
       }
+      return true;
     }
 
     function handleEncode() {
@@ -1044,8 +1045,10 @@
         });
 
         const bytes = base64ToBytes(normalized.normalized);
-        renderOutput(bytes);
         state.outputFileName = "decoded.bin";
+        if (!renderOutput(bytes)) {
+          return;
+        }
 
         const lines = [
           "Decode OK",
@@ -1070,10 +1073,16 @@
       }
     }
 
+    function rememberEditedOutput() {
+      state.outputBytes = new TextEncoder().encode(els.outputText.value);
+      state.outputFileName = "output.txt";
+    }
+
     function handleSwap() {
       const input = els.inputText.value;
       els.inputText.value = els.outputText.value;
       els.outputText.value = input;
+      rememberEditedOutput();
       setStatus("Input and output swapped.");
     }
 
@@ -1126,12 +1135,14 @@
     els.clearBtn.addEventListener("click", handleClear);
     els.copyBtn.addEventListener("click", handleCopy);
     els.downloadBtn.addEventListener("click", handleDownload);
+    els.outputText.addEventListener("input", rememberEditedOutput);
     els.outputMode.addEventListener("change", () => {
       if (!state.outputBytes.length) {
         return;
       }
-      renderOutput(state.outputBytes);
-      setStatus("Output view updated.", "ok");
+      if (renderOutput(state.outputBytes)) {
+        setStatus("Output view updated.", "ok");
+      }
     });
 
     setStatus("Ready. Open this file locally in your browser.");

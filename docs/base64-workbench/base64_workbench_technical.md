@@ -24,6 +24,10 @@ requests, cookies, or persistent storage.
 
 ## Validation
 
+Run `node --test tests/base64-workbench.test.cjs` for offline conversion and
+output-state regressions. The test uses Node's built-in test runner; the site
+stays build-free.
+
 Open `site/tools/base64-workbench/index.html` directly and check:
 
 1. Standard Base64 text encode/decode round trips.
@@ -33,3 +37,7 @@ Open `site/tools/base64-workbench/index.html` directly and check:
 4. Copy and download actions work in a supported browser.
 5. Both the two-column desktop layout and single-column mobile layout remain
    usable.
+6. Invalid UTF-8 stays visible as a Hex fallback with an error status, including
+   when switching output views. The download retains the decoded binary bytes.
+7. Swapping or editing output updates the download to that displayed text as
+   UTF-8 (`output.txt`); clearing output prevents a stale download.
