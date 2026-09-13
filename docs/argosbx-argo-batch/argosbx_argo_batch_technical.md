@@ -127,6 +127,9 @@ const PORT_PRESETS = {
 
 在线拉取由 `fetchList()` 完成。
 
+外部响应、网络错误及上传文件名插入状态 HTML 前统一转义；链接文件段单独编码。
+回归入口：`node --test tests/argosbx-rendering.test.cjs`。
+
 ### 7.1 源优先级
 
 `SOURCES` 按顺序尝试：
