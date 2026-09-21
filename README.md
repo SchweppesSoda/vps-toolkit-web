@@ -19,6 +19,12 @@ Operational scripts remain in [`SchweppesSoda/VPS-Toolkit`](https://github.com/S
 
 ## Maintenance
 
+Run the existing offline page-script tests with `node --test tests/*.test.cjs`.
+The Pages workflow runs them for relevant pull requests and before deploying
+`main`; the site remains static and has no build step. See the
+[2026-09-21 gate record](docs/maintenance/2026-09-21-pages-test-gate.md) for scope
+and validation limits.
+
 Open `site/index.html` directly for a quick local smoke check. For UI changes, read the matching `docs/*/*_technical.md` file first and verify the affected page at desktop and mobile widths.
 
 ## Repository boundaries
