@@ -32,5 +32,3 @@ Maintain source on `main`; [AGENTS.md](./AGENTS.md) records checkout, validation
 Use [VPS-Toolkit](https://github.com/SchweppesSoda/VPS-Toolkit) for operational scripts and [proxy-gateway-plus](https://github.com/SchweppesSoda/proxy-gateway-plus) for gateway implementation. Local previews and validation output belong in `.tmp/`; keep shared tooling configuration visible to Git.
 
 Technical references: [Proxy Node Manager](./docs/proxy-node-manager/proxy_node_manager_technical.md), [Argosbx Argo Batch](./docs/argosbx-argo-batch/argosbx_argo_batch_technical.md), and [Base64 Workbench](./docs/base64-workbench/base64_workbench_technical.md).
-
-[Maintenance documentation](docs/maintenance/INDEX.md).
